@@ -1,35 +1,27 @@
-DROP TABLE IF EXISTS artists CASCADE;
-CREATE TABLE artists (
-    artist_id smallint NOT NULL,
-    artist_name varchar(44) NOT NULL,
-    PRIMARY KEY (artist_id)
+CREATE TABLE artist (
+  artist_id INTEGER PRIMARY KEY,
+  artist_name VARCHAR(255)
 );
 
-DROP TABLE IF EXISTS songs CASCADE;
-CREATE TABLE songs (
-    song_id int NOT NULL,
-    artist_id smallint NOT NULL,
-    song_name varchar(77) NOT NULL,
-    url_suffix varchar(102) NOT NULL,
-    PRIMARY KEY(song_id),
-    FOREIGN KEY (artist_id) REFERENCES artists(artist_id)
+
+CREATE TABLE token (
+  song_id INTEGER,
+  token VARCHAR(255),
+  count INTEGER,
+  PRIMARY KEY (song_id, token)
 );
 
-DROP TABLE IF EXISTS tokens CASCADE;
-CREATE TABLE tokens (
-    song_id int NOT NULL,
-    token varchar(106) NOT NULL,
-    token_count smallint NOT NULL,
-    PRIMARY KEY (song_id, token),
-    FOREIGN KEY (song_id) REFERENCES songs(song_id)
+CREATE TABLE song (
+  song_id INTEGER PRIMARY KEY,
+  artist_id INTEGER REFERENCES artist(artist_id),
+  song_name VARCHAR(255),
+  page_link VARCHAR(1000)
+  /* , FOREIGN KEY (artist_id) REFERENCES artist (artist_id) */
 );
 
-DROP TABLE IF EXISTS TFIDF_scores CASCADE;
-CREATE TABLE TFIDF_scores (
-    song_id int NOT NULL,
-    token varchar(106) NOT NULL,
-    TFIDF_score real NOT NULL, --TODO: Verify that this is the right type.
-    PRIMARY KEY (song_id, token),
-    FOREIGN KEY (song_id, token) REFERENCES tokens(song_id, token),
-    FOREIGN KEY (song_id) REFERENCES songs(song_id)
+CREATE TABLE tfidf (
+  song_id INTEGER,
+  token VARCHAR(255),
+  score FLOAT,
+  PRIMARY KEY(song_id, token)
 );
