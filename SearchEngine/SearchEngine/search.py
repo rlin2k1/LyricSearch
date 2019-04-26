@@ -30,22 +30,23 @@ def _get_tokens(query):
     for token in tokens:
         cleaned_token = _remove_punc(token)
         if cleaned_token:
-            if "'" in cleaned_token:
-                cleaned_token = cleaned_token.replace("'", "''")
+        # We no longer need this because the parameterized query escapes the single quote for us!
+        #     if "'" in cleaned_token:
+        #         cleaned_token = cleaned_token.replace("'", "''")
             rewritten_query.append(cleaned_token)
     return rewritten_query
 
-def _rewritten_query_to_tuple_string(rewritten_query):
+# Example: If num_tokens = 3, returns "(%s, %s, %s)"
+def _get_tuple_template(num_tokens):
     ret = ""
-    num_tokens = len(rewritten_query)
     if num_tokens == 0:
-        return ret # This should never run because we check for 0 length elsewhere
+        return ret # This should never run because we check for 0 length elsewhere.
     if num_tokens == 1:
-        ret += "('" + rewritten_query[0] + "')"
+        ret += "(%s)"
     else:
-        ret += "('" + rewritten_query[0] + "'"
+        ret += "(%s"
         for i in range(1, num_tokens):
-            ret += ", '" + rewritten_query[i] + "'"
+            ret += ", %s"
         ret += ")"
     return ret
 
@@ -74,8 +75,9 @@ def search(query, query_type, page_number):
     if num_tokens == 0:
         return [], 1
     else:
-        tokens_tuple = _rewritten_query_to_tuple_string(tokens_list)
+        tokens_tuple_template = _get_tuple_template(num_tokens)
 
+    data = ()
     rows = []
     if query_type == "or":
         query_to_submit =  "SELECT song_name, artist_name, page_link\
@@ -87,7 +89,7 @@ def search(query, query_type, page_number):
                               WHERE token IN %s\
                               GROUP BY song_id\
                             ) score_sums\
-                            ORDER BY score_sum DESC;" % tokens_tuple
+                            ORDER BY score_sum DESC;" % tokens_tuple_template
     elif query_type == "and":
         query_to_submit =  "SELECT song_name, artist_name, page_link\
                             FROM song\
@@ -102,23 +104,29 @@ def search(query, query_type, page_number):
                               GROUP BY song_id\
                               HAVING COUNT(*) = %d\
                             ) score_sums\
-                            ORDER BY score_sum DESC;" % (tokens_tuple, num_tokens)
+                            ORDER BY score_sum DESC;" % (tokens_tuple_template, num_tokens)
+    data = tuple(tokens_list)
     
+    ## TODO: Delete
     # print("")
     # print("")
-    # print("tokens_tuple == %s" % tokens_tuple)
+    # print("tokens_tuple_template == %s" % tokens_tuple_template)
     # print("num_tokens == %d" % num_tokens)
     # print("query_to_submit == %s" % query_to_submit)
+    # print("data == %s" % str(data))
+    # print("tokens_list == %s" % str(tokens_list))
     # print("")
     # print("")
 
     try:
         conn = psycopg2.connect("dbname='searchengine' user='cs143' host='localhost' password='cs143'")
         cur = conn.cursor()
-        cur.execute(query_to_submit)
+        # print("mogrify returns:\n%s" % cur.mogrify(query_to_submit, data)) # TODO: delete
+        cur.execute(query_to_submit, data)
         rows = cur.fetchall()
-    except:
-        print("ERROR OCCURRED WITH CONNECTING TO POSTGRESQL")
+    except Exception as e:
+        raise e
+        print("ERROR OCCURRED WHILE CONNECTING TO POSTGRESQL DATABASE OR WHILE EXECUTING A QUERY.")
     finally:
         conn.close()
         cur.close()
