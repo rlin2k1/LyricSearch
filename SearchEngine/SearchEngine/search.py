@@ -51,7 +51,18 @@ def search(query, query_type):
     5. The parameters passed to the search function may need to be changed for 1B. 
     """
     rows = []
-    return rows
+    query_to_submit = rewritten_query #Mooj will help with this one. We need to get the tokens to search in the Database. Need to be Prepared Queries. http://initd.org/psycopg/docs/usage.html#sql-injection
+    try:
+        conn = psycopg2.connect("dbname='searchengine' user='cs143' host='localhost' password='cs143'")
+        cur = conn.cursor()
+        cur.execute(query_to_submit)
+        rows = cur.fetchall()
+    except:
+        print("ERROR OCCURRED WITH CONNECTING TO POSTGRESQL")
+    finally:
+        conn.close()
+        cur.close()
+    return rows, 2
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:
@@ -59,4 +70,3 @@ if __name__ == "__main__":
         print(result)
     else:
         print("USAGE: python3 search.py [or|and] term1 term2 ...")
-

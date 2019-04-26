@@ -17,12 +17,14 @@ def dosearch():
     Use request.args to extract other information
     you may need for pagination.
     """
+    #The other information I need to extract for pagination is the current_page number
 
-    search_results = search.search(query, qtype)
+    search_results, current_page = search.search(query, qtype)
     return render_template('results.html',
             query=query,
             results=len(search_results),
-            search_results=search_results)
+            search_results=search_results,
+            page_number = current_page)
 
 @app.route("/", methods=["GET"])
 def index():
