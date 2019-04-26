@@ -33,7 +33,7 @@ def _get_tokens(query):
         # We no longer need this because the parameterized query escapes the single quote for us!
         #     if "'" in cleaned_token:
         #         cleaned_token = cleaned_token.replace("'", "''")
-            rewritten_query.append(cleaned_token)
+            rewritten_query.append(cleaned_token.lower()) # Make case-insensitive
     return rewritten_query
 
 # Example: If num_tokens = 3, returns "(%s, %s, %s)"
