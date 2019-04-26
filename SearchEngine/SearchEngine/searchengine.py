@@ -26,7 +26,7 @@ def dosearch():
     search_results, current_page = search.search(query, qtype, page_number)
     return render_template('results.html',
             query=query,
-            results=105,
+            results=len(search_results),
             search_results=search_results,
             page_number = current_page,
             query_type=qtype)

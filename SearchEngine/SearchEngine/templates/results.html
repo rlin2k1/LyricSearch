@@ -1,7 +1,7 @@
 <html>
 	<head>
 		<title>TuneSearch Results for {{query}}</title>
-		<link rel="stylesheet" type="text/css" href="/static/searchengine.css" media="screen" />
+		<link rel="stylesheet" type="text/css" href="../static/searchengine.css" media="screen" />
 	</head>
 	<body>
 		<div id="results_top">
@@ -16,7 +16,7 @@
 						<input type="radio" name="query_type" value="and">
 						<label for="and">AND</label>
 						<input type="text" maxlength=50 size=50 name="query" value="{{query}}"><input type="submit" value="Search">
-						<label>Page Number: {{page_number}}</label>
+						<div style="text-align:right">Page Number: {{page_number}}</div>
 					</div>
 				</form>
 			</div>
@@ -28,12 +28,48 @@
 				<p><strong><a href="http://www.lyricsfreak.com{{ result[2] }}" target="_blank">{{ result[0] }}</a></strong> <em>by</em> {{ result[1] }} </p>
 			{% endfor %}
 			{% if page_number == 1 and results > 20 %}
-				<button type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number + 1)}}';">Next</button>
+				<button style="background-color: #4CAF50; /* Green */
+				border: none;
+				color: white;
+				padding: 15px 32px;
+				text-align: center;
+				text-decoration: none;
+				display: inline-block;
+				font-size: 16px;
+				margin: 4px 2px;
+				cursor: pointer;" type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number + 1)}}';">Next</button>
 			{% elif page_number > 1 and results > page_number * 20 %}
-				<button type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number - 1)}}';">Previous</button>
-				<button type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number + 1)}}';">Next</button>
+				<button style="background-color: #4CAF50; /* Green */
+				border: none;
+				color: white;
+				padding: 15px 32px;
+				text-align: center;
+				text-decoration: none;
+				display: inline-block;
+				font-size: 16px;
+				margin: 4px 2px;
+				cursor: pointer;" type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number - 1)}}';">Previous</button>
+				<button style="background-color: #4CAF50; /* Green */
+				border: none;
+				color: white;
+				padding: 15px 32px;
+				text-align: center;
+				text-decoration: none;
+				display: inline-block;
+				font-size: 16px;
+				margin: 4px 2px;
+				cursor: pointer;" type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number + 1)}}';">Next</button>
 			{% elif page_number > 1 and results <= page_number * 20 %}
-				<button type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number - 1)}}';">Previous</button>
+				<button style="background-color: #4CAF50; /* Green */
+				border: none;
+				color: white;
+				padding: 15px 32px;
+				text-align: center;
+				text-decoration: none;
+				display: inline-block;
+				font-size: 16px;
+				margin: 4px 2px;
+				cursor: pointer;" type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number - 1)}}';">Previous</button>
 			{% endif %}
 		{% else %}
 			<p><strong>No results for </strong>{{query}}</p>
