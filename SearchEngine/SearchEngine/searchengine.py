@@ -11,6 +11,10 @@ app.debug = True
 def dosearch():
     query = request.args['query']
     qtype = request.args['query_type']
+    try:
+        page_number = int(request.args['page_number'])
+    except:
+        page_number = 1
 
     """
     TODO:
@@ -19,12 +23,13 @@ def dosearch():
     """
     #The other information I need to extract for pagination is the current_page number
 
-    search_results, current_page = search.search(query, qtype)
+    search_results, current_page = search.search(query, qtype, page_number)
     return render_template('results.html',
             query=query,
-            results=len(search_results),
+            results=105,
             search_results=search_results,
-            page_number = current_page)
+            page_number = current_page,
+            query_type=qtype)
 
 @app.route("/", methods=["GET"])
 def index():

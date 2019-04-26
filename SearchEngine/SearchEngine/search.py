@@ -56,7 +56,7 @@ def _remove_duplicates(some_list):
             ret.append(item)
     return ret
 
-def search(query, query_type):
+def search(query, query_type, page_number):
     rewritten_query = _get_tokens(query)
 
     """TODO
@@ -122,7 +122,7 @@ def search(query, query_type):
     finally:
         conn.close()
         cur.close()
-    return rows, 2
+    return rows, page_number
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:

@@ -28,12 +28,12 @@
 				<p><strong><a href="http://www.lyricsfreak.com{{ result[2] }}" target="_blank">{{ result[0] }}</a></strong> <em>by</em> {{ result[1] }} </p>
 			{% endfor %}
 			{% if page_number == 1 and results > 20 %}
-				<button type="button">Next</button>
+				<button type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number + 1)}}';">Next</button>
 			{% elif page_number > 1 and results > page_number * 20 %}
-				<button type="button">Previous</button>
-				<button type="button">Next</button>
-			{% else %}
-				<button type="button">Previous</button>
+				<button type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number - 1)}}';">Previous</button>
+				<button type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number + 1)}}';">Next</button>
+			{% elif page_number > 1 and results <= page_number * 20 %}
+				<button type="button" onclick="window.location.href='{{ url_for('dosearch', query_type=query_type, query=query, page_number=page_number - 1)}}';">Previous</button>
 			{% endif %}
 		{% else %}
 			<p><strong>No results for </strong>{{query}}</p>
