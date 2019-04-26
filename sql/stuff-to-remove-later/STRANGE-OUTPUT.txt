@@ -1,0 +1,61 @@
+The results differ depending on whether I put score_sum in the SELECT clause or not.
+
+
+-- Serve the AND query: Get songs and their TF-IDF score sums
+SELECT song_name, artist_name, page_link <--------------------------------- *** score_sum
+FROM song
+NATURAL JOIN artist
+NATURAL JOIN (
+  -- Get songs that have all the tokens in the search query
+  SELECT song_id, SUM(score) AS score_sum
+  FROM (
+    -- Get all song-token pairs whose token is in the search query
+    SELECT *
+    FROM tfidf
+    WHERE token in ('deep', 'though', 'tears', 'got') -- TODO: REPLACE THIS WITH WORDS IN QUERY!
+  ) filtered_tokens
+  GROUP BY song_id
+  HAVING COUNT(*) = 4 -- TODO: REPLACE THIS WITH NUMBER OF WORDS IN QUERY!
+  -- ORDER BY score_sum DESC; -- TODO: REMOVE THIS IF EVERYTHING IS OKAY.
+) score_sums
+ORDER BY score_sum DESC; -- TODO: THIS IS WEIRD.
+
+
+
+
+
+
+
+
+            song_name            |    artist_name     |                           page_link                           
+---------------------------------+--------------------+---------------------------------------------------------------
+ I'm Gonna Be Alright            | Jennifer Lopez     | /j/jennifer+lopez/im+gonna+be+alright_20070452.html
+ Everything                      | Lil Wayne          | /l/lil+wayne/everything_10165239.html
+ How Deep It Goes                | Heart              | /h/heart/how+deep+it+goes_20064748.html
+ Dreams Of Our Fathers           | Dave Matthews Band | /d/dave+matthews+band/dreams+of+our+fathers_20036524.html
+ How Does It Feel                | Z-Ro               | /z/z+ro/how+does+it+feel_20222273.html
+ Even In The Quietest Moments    | Supertramp         | /s/supertramp/even+in+the+quietest+moments_20133877.html
+ Patches                         | Alabama            | /a/alabama/patches_20522142.html
+ Reasons                         | Chris Rea          | /c/chris+rea/reasons_20030656.html
+ Killers                         | J Cole             | /j/j+cole/killers_20905744.html
+ Tortured Artist                 | Widespread Panic   | /w/widespread+panic/tortured+artist_20328585.html
+ Homie, Lover, Friend            | Z-Ro               | /z/z+ro/homie+lover+friend_20681880.html
+ Brighten Your Night With My Day | James Taylor       | /j/james+taylor/brighten+your+night+with+my+day_20069161.html
+(12 rows)
+
+
+            song_name            |    artist_name     |                           page_link                           |    score_sum     
+---------------------------------+--------------------+---------------------------------------------------------------+------------------
+ I'm Gonna Be Alright            | Jennifer Lopez     | /j/jennifer+lopez/im+gonna+be+alright_20070452.html           | 22.6523192816335
+ Everything                      | Lil Wayne          | /l/lil+wayne/everything_10165239.html                         | 9.58910620508389
+ How Deep It Goes                | Heart              | /h/heart/how+deep+it+goes_20064748.html                       |  9.0808686796595
+ Dreams Of Our Fathers           | Dave Matthews Band | /d/dave+matthews+band/dreams+of+our+fathers_20036524.html     | 7.86324866998279
+ How Does It Feel                | Z-Ro               | /z/z+ro/how+does+it+feel_20222273.html                        | 7.00600585166237
+ Even In The Quietest Moments    | Supertramp         | /s/supertramp/even+in+the+quietest+moments_20133877.html      | 6.65450889253995
+ Patches                         | Alabama            | /a/alabama/patches_20522142.html                              | 5.98953080081359
+ Reasons                         | Chris Rea          | /c/chris+rea/reasons_20030656.html                            | 5.76174191392745
+ Killers                         | J Cole             | /j/j+cole/killers_20905744.html                               | 4.74526686307867
+ Brighten Your Night With My Day | James Taylor       | /j/james+taylor/brighten+your+night+with+my+day_20069161.html | 4.23702933765429
+ Tortured Artist                 | Widespread Panic   | /w/widespread+panic/tortured+artist_20328585.html             | 4.23702933765428
+ Homie, Lover, Friend            | Z-Ro               | /z/z+ro/homie+lover+friend_20681880.html                      | 4.23702933765428
+(12 rows)
