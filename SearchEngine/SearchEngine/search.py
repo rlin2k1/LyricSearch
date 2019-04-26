@@ -35,10 +35,28 @@ def _get_tokens(query):
             rewritten_query.append(cleaned_token)
     return rewritten_query
 
+def _rewritten_query_to_tuple_string(rewritten_query):
+    ret = ""
+    num_tokens = len(rewritten_query)
+    if num_tokens == 0:
+        return ret # This should never run because we check for 0 length elsewhere
+    if num_tokens == 1:
+        ret += "('" + rewritten_query[0] + "')"
+    else:
+        ret += "('" + rewritten_query[0] + "'"
+        for i in range(1, num_tokens):
+            ret += ", '" + rewritten_query[i] + "'"
+        ret += ")"
+    return ret
 
+def _remove_duplicates(some_list):
+    ret = []
+    for item in some_list:
+        if item not in ret:
+            ret.append(item)
+    return ret
 
 def search(query, query_type, page_number):
-    
     rewritten_query = _get_tokens(query)
 
     """TODO
@@ -50,8 +68,50 @@ def search(query, query_type, page_number):
     4. Write queries so that they are not vulnerable to SQL injections.
     5. The parameters passed to the search function may need to be changed for 1B. 
     """
+
+    tokens_list = _remove_duplicates(rewritten_query)
+    num_tokens = len(tokens_list)
+    if num_tokens == 0:
+        return [], 1
+    else:
+        tokens_tuple = _rewritten_query_to_tuple_string(tokens_list)
+
     rows = []
-    query_to_submit = rewritten_query #Mooj will help with this one. We need to get the tokens to search in the Database. Need to be Prepared Queries. http://initd.org/psycopg/docs/usage.html#sql-injection
+    if query_type == "or":
+        query_to_submit =  "SELECT song_name, artist_name, page_link\
+                            FROM song\
+                            NATURAL JOIN artist\
+                            NATURAL JOIN (\
+                              SELECT song_id, SUM(score) AS score_sum\
+                              FROM tfidf\
+                              WHERE token IN %s\
+                              GROUP BY song_id\
+                            ) score_sums\
+                            ORDER BY score_sum DESC;" % tokens_tuple
+    elif query_type == "and":
+        query_to_submit =  "SELECT song_name, artist_name, page_link\
+                            FROM song\
+                            NATURAL JOIN artist\
+                            NATURAL JOIN (\
+                              SELECT song_id, SUM(score) AS score_sum\
+                              FROM (\
+                                SELECT *\
+                                FROM tfidf\
+                                WHERE token in %s\
+                              ) filtered_tokens\
+                              GROUP BY song_id\
+                              HAVING COUNT(*) = %d\
+                            ) score_sums\
+                            ORDER BY score_sum DESC;" % (tokens_tuple, num_tokens)
+    
+    # print("")
+    # print("")
+    # print("tokens_tuple == %s" % tokens_tuple)
+    # print("num_tokens == %d" % num_tokens)
+    # print("query_to_submit == %s" % query_to_submit)
+    # print("")
+    # print("")
+
     try:
         conn = psycopg2.connect("dbname='searchengine' user='cs143' host='localhost' password='cs143'")
         cur = conn.cursor()
