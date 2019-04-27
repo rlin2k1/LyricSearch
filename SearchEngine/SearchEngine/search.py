@@ -57,7 +57,28 @@ def _remove_duplicates(some_list):
             ret.append(item)
     return ret
 
-def search(query, query_type, page_number):
+def cache_search(page_number):
+    offset = (page_number - 1) * 20
+    query_to_submit =  "SELECT song_name, artist_name, page_link\
+                        FROM cacheView\
+                        LIMIT 20\
+                        OFFSET %d;" % offset
+    try:
+        conn = psycopg2.connect("dbname='searchengine' user='cs143' host='localhost' password='cs143'")
+        cur = conn.cursor()
+        cur.execute(query_to_submit)
+        rows = cur.fetchall()
+        cur.execute("SELECT COUNT(*) FROM cacheView;")
+        num_of_results = cur.fetchone()[0]
+    except Exception as e:
+        raise e
+        print("ERROR OCCURRED WHILE CONNECTING TO POSTGRESQL DATABASE OR WHILE EXECUTING A QUERY.")
+    finally:
+        conn.close()
+        cur.close()
+    return rows, num_of_results
+
+def search(query, query_type):
     rewritten_query = _get_tokens(query)
 
     """TODO
@@ -80,7 +101,9 @@ def search(query, query_type, page_number):
     data = ()
     rows = []
     if query_type == "or":
-        query_to_submit =  "SELECT song_name, artist_name, page_link\
+        query_to_submit =  "DROP MATERIALIZED VIEW IF EXISTS cacheView;\
+                            CREATE MATERIALIZED VIEW cacheView AS\
+                            SELECT song_name, artist_name, page_link\
                             FROM song\
                             NATURAL JOIN artist\
                             NATURAL JOIN (\
@@ -91,7 +114,9 @@ def search(query, query_type, page_number):
                             ) score_sums\
                             ORDER BY score_sum DESC;" % tokens_tuple_template
     elif query_type == "and":
-        query_to_submit =  "SELECT song_name, artist_name, page_link\
+        query_to_submit =  "DROP MATERIALIZED VIEW IF EXISTS cacheView;\
+                            CREATE MATERIALIZED VIEW cacheView AS\
+                            SELECT song_name, artist_name, page_link\
                             FROM song\
                             NATURAL JOIN artist\
                             NATURAL JOIN (\
@@ -123,14 +148,14 @@ def search(query, query_type, page_number):
         cur = conn.cursor()
         # print("mogrify returns:\n%s" % cur.mogrify(query_to_submit, data)) # TODO: delete
         cur.execute(query_to_submit, data)
-        rows = cur.fetchall()
+        conn.commit()
     except Exception as e:
         raise e
         print("ERROR OCCURRED WHILE CONNECTING TO POSTGRESQL DATABASE OR WHILE EXECUTING A QUERY.")
     finally:
         conn.close()
         cur.close()
-    return rows, page_number
+    return
 
 if __name__ == "__main__":
     if len(sys.argv) > 2:

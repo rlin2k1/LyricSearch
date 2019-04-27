@@ -11,10 +11,14 @@ app.debug = True
 def dosearch():
     query = request.args['query']
     qtype = request.args['query_type']
+    print("Hello")
     try:
         page_number = int(request.args['page_number'])
+        #Means Use Materialized View
     except:
         page_number = 1
+        search.search(query, qtype)
+        #Means No Materialized View Exists Yet
 
     """
     TODO:
@@ -23,12 +27,12 @@ def dosearch():
     """
     #The other information I need to extract for pagination is the current_page number
 
-    search_results, current_page = search.search(query, qtype, page_number)
+    search_results, num_of_results = search.cache_search(page_number)
     return render_template('results.html',
             query=query,
-            results=len(search_results),
+            results=num_of_results,
             search_results=search_results,
-            page_number = current_page,
+            page_number = page_number,
             query_type=qtype)
 
 @app.route("/", methods=["GET"])
