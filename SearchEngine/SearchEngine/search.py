@@ -4,6 +4,7 @@ import psycopg2
 import re
 import string
 import sys
+import math
 
 _PUNCTUATION = frozenset(string.punctuation)
 
@@ -58,25 +59,27 @@ def _remove_duplicates(some_list):
     return ret
 
 def cache_search(page_number):
-    offset = (page_number - 1) * 20
-    query_to_submit =  "SELECT song_name, artist_name, page_link\
-                        FROM cacheView\
-                        LIMIT 20\
-                        OFFSET %d;" % offset
     try:
         conn = psycopg2.connect("dbname='searchengine' user='cs143' host='localhost' password='cs143'")
         cur = conn.cursor()
-        cur.execute(query_to_submit)
-        rows = cur.fetchall()
         cur.execute("SELECT COUNT(*) FROM cacheView;")
         num_of_results = cur.fetchone()[0]
+        if page_number < 1 or page_number > math.ceil(num_of_results/20):
+            page_number = 1
+        offset = (page_number - 1) * 20
+        query_to_submit =  "SELECT song_name, artist_name, page_link\
+                            FROM cacheView\
+                            LIMIT 20\
+                            OFFSET %d;" % offset
+        cur.execute(query_to_submit)
+        rows = cur.fetchall()
     except Exception as e:
         raise e
         print("ERROR OCCURRED WHILE CONNECTING TO POSTGRESQL DATABASE OR WHILE EXECUTING A QUERY.")
     finally:
         conn.close()
         cur.close()
-    return rows, num_of_results
+    return rows, num_of_results, page_number
 
 def search(query, query_type):
     rewritten_query = _get_tokens(query)

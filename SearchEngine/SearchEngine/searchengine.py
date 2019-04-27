@@ -26,8 +26,7 @@ def dosearch():
     you may need for pagination.
     """
     #The other information I need to extract for pagination is the current_page number
-
-    search_results, num_of_results = search.cache_search(page_number)
+    search_results, num_of_results, page_number = search.cache_search(page_number)# Has Handling for Incorrect Page Number
     return render_template('results.html',
             query=query,
             results=num_of_results,
