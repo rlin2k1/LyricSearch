@@ -11,7 +11,7 @@ app.debug = True
 def dosearch():
     query = request.args['query']
     qtype = request.args['query_type']
-    print("Hello")
+    # print("Hello") # For Debugging
     try:
         page_number = int(request.args['page_number'])
         #Means Use Materialized View

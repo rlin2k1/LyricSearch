@@ -135,7 +135,7 @@ def search(query, query_type):
                             ORDER BY score_sum DESC;" % (tokens_tuple_template, num_tokens)
     data = tuple(tokens_list)
     
-    ## TODO: Delete
+    ## Debug output:
     # print("")
     # print("")
     # print("tokens_tuple_template == %s" % tokens_tuple_template)
